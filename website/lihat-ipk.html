@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lihat Semua IPK</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <header>
+        <h1>Lihat Semua IPK</h1>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="index.html">Dashboard</a></li>
+            <li><a href="lihat-ipk.html">Lihat Semua IPK</a></li>
+            <li><a href="matkul.html">Mata Kuliah</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <section id="lihatIpk" aria-labelledby="lihatIpkHeading">
+            <h2 id="lihatIpkHeading">Lihat Semua IPK</h2>
+
+            <!-- Tombol Load Data -->
+            <button id="loadDataButton" onclick="fetchMahasiswaData()">Load Data</button>
+
+            <!-- Filter Options -->
+            <div class="filter-options" style="display: none;" id="filterIpkOptions">
+                <!-- Search by NIM or Name -->
+                <input id="searchInputIpk" type="text" placeholder="Search by NIM or Name" oninput="filterIpkData()"
+                    aria-label="Search IPK by NIM or Name" />
+                <!-- Rows per page selector -->
+                <label for="rowsPerPageIpk">Rows per page:</label>
+                <select id="rowsPerPageIpk" onchange="changeRowsPerPageIpk()">
+                    <option value="10">10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                </select>
+            </div>
+
+            <!-- Display Average IPK -->
+            <h3>Rata-Rata IPK Keseluruhan: <span id="rataRataIpk">-</span></h3>
+
+            <!-- Mahasiswa IPK Table -->
+            <table id="mahasiswaTable" border="1" style="display: none;" aria-label="Mahasiswa IPK Table">
+                <thead>
+                    <tr>
+                        <th>NIM</th>
+                        <th>Nama</th>
+                        <th>Total Nilai</th>
+                        <th>Total SKS</th>
+                        <th>IPK</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+
+            <!-- Pagination Controls -->
+            <div id="paginationIpk" class="pagination-controls" style="display: none;"></div>
+
+            <!-- Error Message -->
+            <p id="errorMessage" style="color: red;" role="alert"></p>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Mahasiswa Dashboard. All rights reserved.</p>
+    </footer>
+
+    <script>
+        document.getElementById('loadDataButton').addEventListener('click', () => {
+            const rowsPerPage = parseInt(document.getElementById('rowsPerPageIpk')?.value || 25, 10);
+            fetchMahasiswaDataipk(rowsPerPage, 1);
+        });
+
+        let allIpkData = [];
+        let filteredIpkData = [];
+        let currentPage = 1;
+        let rowsPerPage = 25;
+
+        async function fetchMahasiswaData() {
+            try {
+                const response = await fetch('https://kx3kq36nak.execute-api.ap-southeast-1.amazonaws.com/dev/mahasiswaipk');
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                const parsedData = JSON.parse(data.body);
+                const mahasiswaData = parsedData.data;
+                const rataRataIpk = parsedData.rata_rata_ipk;
+
+                if (!mahasiswaData || mahasiswaData.length === 0) {
+                    document.getElementById('errorMessage').textContent = 'No data available.';
+                    return;
+                }
+
+                document.getElementById('rataRataIpk').textContent = rataRataIpk;
+                document.getElementById('mahasiswaTable').style.display = 'table';
+
+                allIpkData = mahasiswaData;
+                filteredIpkData = mahasiswaData; // Assume no filter initially
+                renderTable();
+                renderPagination();
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                document.getElementById('errorMessage').textContent = `Error fetching data: ${error.message}`;
+            }
+        }
+
+        function renderTable() {
+            const tableBody = document.querySelector('#mahasiswaTable tbody');
+            tableBody.innerHTML = ''; // Clear existing rows
+
+            const start = (currentPage - 1) * rowsPerPage;
+            const end = start + rowsPerPage;
+            const dataToShow = filteredIpkData.slice(start, end);
+
+            dataToShow.forEach(mahasiswa => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${mahasiswa.nim}</td>
+                    <td>${mahasiswa.nama}</td>
+                    <td>${mahasiswa.total_nilai}</td>
+                    <td>${mahasiswa.total_sks}</td>
+                    <td>${mahasiswa.ipk}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function renderPagination() {
+            const totalPages = Math.ceil(filteredIpkData.length / rowsPerPage);
+            const paginationContainer = document.getElementById('paginationIpk');
+            paginationContainer.innerHTML = '';
+
+            // Previous button
+            const prevButton = document.createElement('button');
+            prevButton.textContent = 'Previous';
+            prevButton.disabled = currentPage === 1;
+            prevButton.addEventListener('click', () => {
+                currentPage--;
+                renderTable();
+                renderPagination();
+            });
+            paginationContainer.appendChild(prevButton);
+
+            // Page numbers
+            const pageNumbers = document.createElement('span');
+            pageNumbers.textContent = `Page ${currentPage} of ${totalPages}`;
+            paginationContainer.appendChild(pageNumbers);
+
+            // Next button
+            const nextButton = document.createElement('button');
+            nextButton.textContent = 'Next';
+            nextButton.disabled = currentPage === totalPages;
+            nextButton.addEventListener('click', () => {
+                currentPage++;
+                renderTable();
+                renderPagination();
+            });
+            paginationContainer.appendChild(nextButton);
+
+            paginationContainer.style.display = 'flex';
+        }
+    </script>
+</body>
+
+</html>

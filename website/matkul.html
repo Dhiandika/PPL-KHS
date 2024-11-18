@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Test Page - Mata Kuliah</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Pagination controls */
+    #paginationControls {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: 20px;
+    }
+
+    #paginationControls button {
+        padding: 8px 16px;
+        margin: 0 5px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        cursor: pointer;
+        border-radius: 4px;
+    }
+
+    #paginationControls button:disabled {
+        background-color: #ddd;
+        cursor: not-allowed;
+    }
+
+    #paginationControls span {
+        margin: 0 10px;
+        font-size: 16px;
+    }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>API Test for Mata Kuliah</h1>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="index.html">Dashboard</a></li>
+            <li><a href="lihat-ipk.html">Lihat Semua IPK</a></li>
+            <li><a href="mata-kuliah.html">Mata Kuliah</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <div class="container">
+            <h2>List of Mata Kuliah</h2>
+            <table id="dataTable">
+                <thead>
+                    <tr>
+                        <th>ID Mata Kuliah</th>
+                        <th>Nama Mata Kuliah</th>
+                        <th>SKS</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <!-- Data will be populated here -->
+                </tbody>
+            </table>
+
+            <!-- Pagination Controls -->
+            <div id="paginationControls">
+                <button id="prevPage">Previous</button>
+                <span id="pageNumber">Page 1</span>
+                <button id="nextPage">Next</button>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Mahasiswa Dashboard. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // Data storage and pagination variables
+        let mataKuliahList = [];
+        let currentPage = 1;
+        const rowsPerPage = 15;
+
+        // Automatically fetch data when the page loads
+        window.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const response = await fetch('https://kx3kq36nak.execute-api.ap-southeast-1.amazonaws.com/dev/matakuliah');
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const data = await response.json();
+                mataKuliahList = JSON.parse(data.body);
+                displayPage(currentPage);  // Display the first page
+            } catch (error) {
+                alert('Failed to fetch data: ' + error.message);
+            }
+        });
+
+        // Display data for the current page
+        function displayPage(page) {
+            const start = (page - 1) * rowsPerPage;
+            const end = start + rowsPerPage;
+            const pageData = mataKuliahList.slice(start, end);
+            
+            const tableBody = document.getElementById('tableBody');
+            tableBody.innerHTML = '';  // Clear any existing rows
+
+            pageData.forEach(mataKuliah => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${mataKuliah.id_mk}</td>
+                    <td>${mataKuliah.nama_mk}</td>
+                    <td>${mataKuliah.sks}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            // Update page number display
+            document.getElementById('pageNumber').textContent = `Page ${page}`;
+        }
+
+        // Pagination controls
+        document.getElementById('prevPage').addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                displayPage(currentPage);
+            }
+        });
+
+        document.getElementById('nextPage').addEventListener('click', () => {
+            const totalPages = Math.ceil(mataKuliahList.length / rowsPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                displayPage(currentPage);
+            }
+        });
+    </script>
+</body>
+</html>

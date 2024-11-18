@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mahasiswa Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <header>
+      <h1>Mahasiswa Dashboard</h1>
+    </header>
+
+    <nav>
+      <ul>
+        <li><a href="index.html">Dashboard</a></li>
+        <li><a href="lihat-ipk.html">Lihat Semua IPK</a></li>
+        <li><a href="matkul.html">Mata Kuliah</a></li>
+      </ul>
+    </nav>
+
+    <main>
+      <!-- Section 1: Data Mahasiswa -->
+      <section id="dataMahasiswa" aria-labelledby="dataMahasiswaHeading">
+        <h2 id="dataMahasiswaHeading">Data Mahasiswa</h2>
+        <div class="filter-options">
+          <!-- Search by NIM or Name -->
+          <input
+            id="searchInput"
+            type="text"
+            placeholder="Search by NIM or Name"
+            aria-label="Search Mahasiswa by NIM or Name"
+          />
+          <!-- Rows per page selector -->
+          <label for="rowsPerPage">Rows per page:</label>
+          <select id="rowsPerPage" onchange="changeRowsPerPage()">
+            <option value="25">25</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+          </select>
+        </div>
+        <!-- Navigation Info -->
+        <div id="navigationInfo" aria-live="polite"></div>
+        <!-- Mahasiswa Data Table -->
+        <table id="dataTable" border="1" style="display: none;" aria-label="Mahasiswa Data Table">
+          <thead>
+            <tr>
+              <th>NIM</th>
+              <th>Nama</th>
+              <th>IPS</th>
+              <th>IPK</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        <!-- Status Message -->
+        <div id="status" class="loading" role="status" aria-live="polite">Loading...</div>
+        <!-- Pagination Controls -->
+        <div id="pagination" class="pagination-controls"></div>
+      </section>
+      <!-- End of Section 1 -->
+
+      <!-- Section 2: Kalkulator IPS -->
+      <section id="kalkulatorIps" aria-labelledby="kalkulatorIpsHeading">
+        <h2 id="kalkulatorIpsHeading">Kalkulator IPS</h2>
+        <label for="nim-ips">Masukkan NIM:</label>
+        <input
+          id="nim-ips"
+          type="text"
+          placeholder="Masukkan NIM"
+          aria-label="Masukkan NIM untuk kalkulator IPS"
+        />
+        <button id="btn-ips">Calculate IPS</button>
+        <!-- IPS Table -->
+        <table id="ipsTable" style="display: none;" aria-label="IPS Table">
+          <thead>
+            <tr>
+              <th>Semester</th>
+              <th>Tahun</th>
+              <th>Total Nilai</th>
+              <th>Total SKS</th>
+              <th>IPS</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+      <!-- End of Section 2 -->
+
+      <!-- Section 3: Kalkulator IPK -->
+      <section id="kalkulatorIpk" aria-labelledby="kalkulatorIpkHeading">
+        <h2 id="kalkulatorIpkHeading">Kalkulator IPK</h2>
+        <label for="nim-ipk">Masukkan NIM:</label>
+        <input
+          id="nim-ipk"
+          type="text"
+          placeholder="Masukkan NIM"
+          aria-label="Masukkan NIM untuk kalkulator IPK"
+        />
+        <button id="btn-ipk">Calculate IPK</button>
+        <!-- IPK Table -->
+        <table id="ipkTable" style="display: none;" aria-label="IPK Table">
+          <thead>
+            <tr>
+              <th>Total Nilai</th>
+              <th>Total SKS</th>
+              <th>IPK</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+      <!-- End of Section 3 -->
+    </main>
+
+    <footer>
+      <p>&copy; 2024 Mahasiswa Dashboard. All rights reserved.</p>
+    </footer>
+
+    <!-- External JavaScript -->
+    <script src="index.js"></script>
+  </body>
+</html>
