@@ -44,32 +44,3 @@ Laporan ini merangkum hasil pengujian beban pada aplikasi yang dihosting di `htt
 * **Waktu Respons Lambat:** Waktu respons yang lambat dan bervariasi, dengan beberapa mencapai lebih dari 70 detik, mengindikasikan bottleneck atau masalah performa server.
 * **Performa File Statis:** Server menangani permintaan file statis dengan lebih baik, meskipun perlu investigasi lebih lanjut terhadap kegagalan  `ConnectionResetError` pada `/styles.css` dan waktu respons yang relatif tinggi pada beberapa file HTML.
 
-## Saran
-
-* **Profiling dan Debugging:** Lakukan profiling dan debugging aplikasi server untuk mengidentifikasi bottleneck dan penyebab kegagalan API.
-* **Pemeriksaan Sumber Daya Server:** Pastikan resource server (CPU, memori, dll.) mencukupi untuk menangani beban yang diberikan.
-* **Optimasi Database:** Jika endpoint API berinteraksi dengan database, optimasi query dan konfigurasi database mungkin diperlukan.
-* **Pemantauan Jaringan:** Investigasi `ConnectionResetError`  dengan memeriksa koneksi jaringan dan konfigurasi server.
-* **Pengujian Lebih Lanjut:** Lakukan pengujian beban dengan konfigurasi pengguna dan durasi yang berbeda untuk  memahami  karakteristik performa  aplikasi secara  lebih  komprehensif.
-
-
-## Detail Statistik
-
-Statistik detail untuk setiap endpoint dan persentil dapat ditemukan pada data mentah yang dihasilkan oleh Locust (lihat file HTML yang dilampirkan).
-content_copy
-Use code with caution.
-Markdown
-
-Beberapa perubahan dan penambahan informasi pada README.md ini:
-
-Tabel Ringkasan: Menambahkan tabel ringkasan performa berdasarkan persentil untuk memberikan gambaran yang lebih jelas.
-
-Endpoint /dev?nim=[bervariasi]: Menggabungkan semua endpoint dengan parameter NIM karena polanya serupa.
-
-File Statis: Menyertakan nama file statis secara eksplisit dan menyoroti waktu respons yang relatif tinggi pada beberapa file HTML.
-
-Saran Lebih Spesifik: Menambahkan saran yang lebih spesifik, seperti optimasi database dan pemantauan jaringan.
-
-Penekanan pada Data Mentah: Menekankan pentingnya memeriksa data mentah Locust untuk analisis lebih detail.
-
-Dengan format ini, informasi lebih terstruktur dan mudah dipahami oleh pembaca.
