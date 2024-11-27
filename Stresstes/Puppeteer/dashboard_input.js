@@ -4,31 +4,6 @@ const puppeteer = require("puppeteer");
   const browser = await puppeteer.launch({ headless: false }); // Gunakan false untuk melihat interaksi
   const page = await browser.newPage();
 
-  // Daftar NIM untuk pengujian
-  const nims = [
-    "100001", "100002", "100003", "100004", "100005",
-    "100006", "100007", "100008", "100009", "100010",
-    "100011", "100012", "100013", "100014", "100015",
-    "100016", "100017", "100018", "100019", "100020",
-    "100021", "100022", "100023", "100024", "100025",
-    "100026", "100027", "100028", "100029", "100030",
-    "100031", "100032", "100033", "100034", "100035",
-    "100036", "100037", "100038", "100039", "100040",
-    "100041", "100042", "100043", "100044", "100045",
-    "100046", "100047", "100048", "100049", "100050",
-    "100051", "100052", "100053", "100054", "100055",
-    "100056", "100057", "100058", "100059", "100060",
-    "100061", "100062", "100063", "100064", "100065",
-    "100066", "100067", "100068", "100069", "100070",
-    "100071", "100072", "100073", "100074", "100075",
-    "100076", "100077", "100078", "100079", "100080",
-    "100081", "100082", "100083", "100084", "100085",
-    "100086", "100087", "100088", "100089", "100090",
-    "100091", "100092", "100093", "100094", "100095",
-    "100096", "100097", "100098", "100099", "100100"
-  ];
-  
-
   // Fungsi untuk menguji IPS dan IPK untuk satu NIM
   const testNim = async (nim) => {
     console.log(`\n[TEST] NIM yang dimasukkan: ${nim}`);
@@ -112,8 +87,9 @@ const puppeteer = require("puppeteer");
     let totalTime = 0;
     const successfulTests = [];
 
-    // Uji setiap NIM
-    for (const nim of nims) {
+    // Iterasi untuk NIM dari 100001 hingga 100300
+    for (let i = 1; i <= 300; i++) {
+      const nim = (100000 + i).toString(); // Pastikan NIM tetap dalam format 6 digit
       const time = await testNim(nim);
       if (time !== null) {
         totalTime += time;
@@ -134,7 +110,7 @@ const puppeteer = require("puppeteer");
         : 0;
 
     console.log("\n=== RINGKASAN PENGUJIAN ===");
-    console.log(`Total waktu untuk 10 NIM: ${Math.round(totalTime)} ms`);
+    console.log(`Total waktu untuk 300 NIM: ${Math.round(totalTime)} ms`);
     console.log(`Rata-rata waktu per NIM: ${averageTime} ms`);
   } catch (error) {
     console.error("[ERROR] Terjadi kesalahan saat pengujian:", error.message);
