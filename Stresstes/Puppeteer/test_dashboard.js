@@ -4,60 +4,14 @@ const puppeteer = require("puppeteer");
   const browser = await puppeteer.launch({ headless: false }); // Gunakan false untuk melihat interaksi
   const page = await browser.newPage();
 
-  // Array untuk mencatat NIM dengan error
-  const errorNims = [];
-
-  // Tangani dialog (alert) secara otomatis
-  page.on("dialog", async (dialog) => {
-    console.warn(`[ALERT] Pesan dialog terdeteksi: "${dialog.message()}"`);
-    await dialog.accept(); // Tekan tombol "OK" pada dialog
-  });
-
-  // Fungsi untuk menguji pencarian data di #searchInput
-  const testSearchInput = async (nim) => {
-    console.log(`\n[TEST] Pencarian Data Mahasiswa dengan NIM: "${nim}"`);
-
-    const startSearchTime = performance.now();
-    try {
-      // Bersihkan input sebelum mengetik NIM
-      await page.evaluate(() => {
-        const input = document.getElementById("searchInput");
-        input.value = ""; // Bersihkan input sebelumnya
-      });
-
-      // Masukkan input NIM ke #searchInput
-      await page.type("#searchInput", nim);
-
-      // Picu event input untuk menjalankan pencarian
-      await page.evaluate(() => {
-        const input = document.getElementById("searchInput");
-        input.dispatchEvent(new Event("input", { bubbles: true }));
-      });
-
-      // Tunggu hasil tabel diperbarui
-      await page.waitForSelector("#dataTable tbody tr", { visible: true });
-
-      const endSearchTime = performance.now();
-      console.log(`Waktu untuk pencarian di #searchInput: ${Math.round(endSearchTime - startSearchTime)} ms`);
-    } catch (error) {
-      console.error(`[ERROR] Pencarian Data Mahasiswa gagal untuk NIM "${nim}":`, error.message);
-    }
-  };
-
   // Fungsi untuk menguji IPS dan IPK untuk satu NIM
   const testNim = async (nim) => {
-    console.log(`\n[TEST] NIM yang dimasukkan: ${nim}`);
+    console.log("\n[TEST] NIM yang dimasukkan: ${nim}");
 
     // Waktu mulai untuk NIM ini
     const startNimTime = performance.now();
 
     try {
-      // Pengujian Pencarian Data Mahasiswa
-      const searchStart = performance.now();
-      await testSearchInput(nim); // Test pencarian sebelum menuju IPS
-      const searchEnd = performance.now();
-      console.log(`Waktu total untuk pencarian di #searchInput: ${Math.round(searchEnd - searchStart)} ms`);
-
       // Proses untuk mendapatkan IPS
       const startIps = performance.now();
 
@@ -112,14 +66,52 @@ const puppeteer = require("puppeteer");
 
       // Total waktu untuk NIM ini
       const endNimTime = performance.now();
-      console.log(`Total waktu untuk NIM "${nim}": ${Math.round(endNimTime - startNimTime)} ms`);
+      console.log(
+        `Total waktu untuk NIM ${nim}: ${Math.round(endNimTime - startNimTime)} ms`
+      );
 
       return endNimTime - startNimTime;
     } catch (error) {
       console.error(`[ERROR] Pengujian NIM ${nim} gagal:`, error.message);
+      return null;
+    }
+  };
 
-      // Mencatat NIM yang gagal saat terjadi error pada IPS atau IPK
-      errorNims.push(nim); // Catat NIM yang gagal
+  // Fungsi untuk menguji Search Input
+  const testSearch = async (nim) => {
+    console.log(`\n[TEST] Search NIM yang dimasukkan: ${nim}`);
+
+    // Waktu mulai untuk pencarian ini
+    const startSearchTime = performance.now();
+
+    try {
+      // Ketikkan NIM di search input
+      await page.type("#searchInput", nim);
+
+      // Tunggu hasil pencarian muncul di tabel
+      await page.waitForSelector("#dataTable", { visible: true });
+
+      const searchResult = await page.evaluate(() => {
+        const row = document.querySelector("#dataTable tbody tr:nth-child(2)"); // Baris kedua
+        if (row) {
+          const columns = row.querySelectorAll("td");
+          return {
+            nim: columns[0].textContent,
+            nama: columns[1].textContent,
+            ips: columns[2].textContent,
+            ipk: columns[3].textContent,
+          };
+        }
+        return null;
+      });
+
+      const endSearchTime = performance.now();
+      console.log("Search Result:", searchResult);
+      console.log("Waktu untuk Search:", Math.round(endSearchTime - startSearchTime), "ms");
+
+      return endSearchTime - startSearchTime;
+    } catch (error) {
+      console.error(`[ERROR] Pengujian Search NIM ${nim} gagal:`, error.message);
       return null;
     }
   };
@@ -137,16 +129,23 @@ const puppeteer = require("puppeteer");
     // Iterasi untuk NIM dari 100001 hingga 100300
     for (let i = 1; i <= 300; i++) {
       const nim = (100000 + i).toString(); // Pastikan NIM tetap dalam format 6 digit
-      const time = await testNim(nim);
-      if (time !== null) {
-        totalTime += time;
-        successfulTests.push(time);
+
+      // Pengujian untuk IPS dan IPK
+      const nimTime = await testNim(nim);
+
+      // Pengujian untuk Search Input
+      const searchTime = await testSearch(nim);
+
+      if (nimTime !== null && searchTime !== null) {
+        totalTime += nimTime + searchTime;
+        successfulTests.push(nimTime + searchTime);
       }
 
       // Bersihkan input untuk NIM berikutnya
       await page.evaluate(() => {
         document.getElementById("nim-ips").value = "";
         document.getElementById("nim-ipk").value = "";
+        document.getElementById("searchInput").value = "";
       });
     }
 
@@ -159,7 +158,6 @@ const puppeteer = require("puppeteer");
     console.log("\n=== RINGKASAN PENGUJIAN ===");
     console.log(`Total waktu untuk 300 NIM: ${Math.round(totalTime)} ms`);
     console.log(`Rata-rata waktu per NIM: ${averageTime} ms`);
-    console.log(`Daftar NIM dengan error: ${errorNims.join(", ")}`);
   } catch (error) {
     console.error("[ERROR] Terjadi kesalahan saat pengujian:", error.message);
   } finally {
