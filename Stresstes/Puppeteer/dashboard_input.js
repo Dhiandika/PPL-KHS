@@ -1,4 +1,5 @@
 const puppeteer = require("puppeteer");
+const fs = require('fs'); // Import modul untuk menulis file
 
 (async () => {
   const browser = await puppeteer.launch({ headless: false }); // Gunakan false untuk melihat interaksi
@@ -6,7 +7,8 @@ const puppeteer = require("puppeteer");
 
   // Array untuk mencatat NIM dengan error
   const errorNims = [];
-
+  const results = []; // Array untuk menyimpan hasil pengujian
+  
   // Tangani dialog (alert) secara otomatis
   page.on("dialog", async (dialog) => {
     console.warn(`[ALERT] Pesan dialog terdeteksi: "${dialog.message()}"`);
@@ -141,6 +143,7 @@ const puppeteer = require("puppeteer");
       if (time !== null) {
         totalTime += time;
         successfulTests.push(time);
+        results.push({ nim, time });
       }
 
       // Bersihkan input untuk NIM berikutnya
@@ -149,13 +152,22 @@ const puppeteer = require("puppeteer");
         document.getElementById("nim-ipk").value = "";
       });
     }
+    // Simpan hasil ke file CSV
+    fs.writeFileSync(
+      'stress_test_results.csv',
+      'NIM,Time,Error\n' +
+        results
+          .map((r) => `${r.nim},${r.time},${errorNims.includes(r.nim) ? 'Yes' : 'No'}`)
+          .join('\n')
+    );
+    console.log('[INFO] Hasil pengujian disimpan ke stress_test_results.csv');
 
     // Hitung rata-rata waktu
     const averageTime =
       successfulTests.length > 0
         ? Math.round(totalTime / successfulTests.length)
         : 0;
-
+    
     console.log("\n=== RINGKASAN PENGUJIAN ===");
     console.log(`Total waktu untuk 300 NIM: ${Math.round(totalTime)} ms`);
     console.log(`Rata-rata waktu per NIM: ${averageTime} ms`);
